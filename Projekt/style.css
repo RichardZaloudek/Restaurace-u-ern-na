@@ -1,0 +1,259 @@
+/* --- Základní reset a nastavení --- */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #f4f1ea;
+    color: #333;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* --- Hlavička aplikace --- */
+.app-header {
+    background-color: #2c1d11;
+    color: #f5af42;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+}
+
+.app-header h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.user-info {
+    color: #fff;
+    font-size: 0.9rem;
+}
+
+/* --- Hlavní kontejner (Rozdělení na 2 panely) --- */
+.main-container {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* --- LEVÝ PANEL: Nabídka --- */
+.menu-section {
+    flex: 2;
+    padding: 20px;
+    overflow-y: auto;
+    background-color: #fcfbfa;
+}
+
+.menu-section h2 {
+    margin-bottom: 20px;
+    color: #2c1d11;
+    border-bottom: 2px solid #e0d9cd;
+    padding-bottom: 5px;
+}
+
+.menu-section h3 {
+    margin: 15px 0 10px 0;
+    color: #666;
+    font-size: 1.1rem;
+}
+
+/* Mřížka pro tlačítka menu */
+.menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+/* Karta položky menu (Tlačítko) */
+.menu-card {
+    background: white;
+    border: 1px solid #e0d9cd;
+    border-radius: 8px;
+    padding: 20px 15px;
+    text-align: center;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 110px;
+    transition: transform 0.1s, box-shadow 0.2s;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.menu-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.menu-card:active {
+    transform: translateY(1px);
+}
+
+/* Barevné odlišení jídla a nápoje */
+.menu-card.food {
+    border-left: 5px solid #d9534f; /* Červená pro jídlo */
+}
+
+.menu-card.drink {
+    border-left: 5px solid #5bc0de; /* Modrá pro nápoje */
+}
+
+.card-title {
+    font-weight: bold;
+    font-size: 0.95rem;
+    color: #2c1d11;
+    margin-bottom: 10px;
+}
+
+.card-price {
+    font-size: 1.1rem;
+    color: #e67e22;
+    font-weight: 700;
+}
+
+/* --- PRAVÝ PANEL: Objednávka --- */
+.order-section {
+    flex: 1;
+    background-color: #f4f1ea;
+    border-left: 2px solid #e0d9cd;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-width: 320px;
+}
+
+.order-section h2 {
+    margin-bottom: 15px;
+    color: #2c1d11;
+    font-size: 1.3rem;
+}
+
+/* Seznam položek v objednávce */
+.order-list {
+    flex: 1;
+    overflow-y: auto;
+    background: white;
+    border-radius: 6px;
+    border: 1px solid #e0d9cd;
+    padding: 10px;
+    margin-bottom: 20px;
+}
+
+/* Jedna řádka v objednávce */
+.order-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 5px;
+    border-bottom: 1px dashed #e0d9cd;
+}
+
+.order-item:last-child {
+    border-bottom: none;
+}
+
+.item-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.item-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.item-detail {
+    font-size: 0.8rem;
+    color: #777;
+}
+
+.item-price {
+    font-weight: bold;
+    color: #2c1d11;
+}
+
+/* --- Shrnutí a akční tlačítka --- */
+.order-summary {
+    background: white;
+    border-radius: 6px;
+    padding: 15px;
+    border: 1px solid #e0d9cd;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+}
+
+.total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #2c1d11;
+}
+
+.total-price {
+    font-size: 1.5rem;
+    color: #27ae60;
+}
+
+/* Tlačítka */
+.btn-checkout {
+    width: 100%;
+    background-color: #27ae60;
+    color: white;
+    border: none;
+    padding: 12px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-bottom: 8px;
+    transition: background 0.2s;
+}
+
+.btn-checkout:hover {
+    background-color: #219653;
+}
+
+.btn-cancel {
+    width: 100%;
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    padding: 8px;
+    font-size: 0.9rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-cancel:hover {
+    background-color: #c0392b;
+}
+
+/* --- Responzivita pro mobilní zařízení / menší tablety --- */
+@media (max-width: 768px) {
+    .main-container {
+        flex-direction: column;
+        overflow: auto;
+    }
+    body {
+        overflow: auto;
+        height: auto;
+    }
+    .order-section {
+        border-left: none;
+        border-top: 2px solid #e0d9cd;
+    }
+}

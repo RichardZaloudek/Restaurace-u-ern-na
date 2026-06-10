@@ -110,7 +110,7 @@ class RestaurantApp { //třída pro hlavní logiku aplikace
         ];
     }
 
-    private init(): void { //metoda pro inicializaci aplikace, generuje HTML a nastavuje posluchače událostí
+    private init(): void {
         const appElement = document.getElementById('app');
         if (!appElement) {
             console.error("Prvek #app nebyl v HTML nalezen!");
@@ -138,53 +138,88 @@ class RestaurantApp { //třída pro hlavní logiku aplikace
                     padding: 20px 0;
                     box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
                 }
-                header h1 { margin: 0; font-weight: 600; }
+                header h1 { margin: 0; font-weight: 600; font-size: 1.5rem; }
+                
+                /* --- NOVÝ FLEXBOX KONTEJNER (Mobilní první - pod sebou) --- */
                 .restaurant-container {
-                    display: grid;
-                    grid-template-columns: 1fr;
-                    gap: 30px;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 20px;
                     max-width: 1200px;
-                    margin: 30px auto;
-                    padding: 0 20px;
+                    margin: 20px auto;
+                    padding: 0 15px;
+                    box-sizing: border-box;
                 }
-                @media (min-width: 768px) {
-                    .restaurant-container { grid-template-columns: 2fr 1fr; }
-                }
+                
                 section {
                     background: white;
-                    padding: 25px;
+                    padding: 20px;
                     border-radius: 12px;
                     box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+                    box-sizing: border-box;
                 }
-                h2 { margin-top: 0; color: var(--dark); border-bottom: 2px solid var(--light); padding-bottom: 10px; }
+                
+                /* Výchozí plná šířka pro flex položky na mobilu */
+                .menu-section, .order-section {
+                    flex: 1 1 100%;
+                }
+
+                /* --- RESPONZIVITA PRO TABLETY A DESKOPY (Vedle sebe) --- */
+                @media (min-width: 768px) {
+                    header h1 { font-size: 2rem; }
+                    .restaurant-container { 
+                        flex-direction: row; 
+                        align-items: flex-start; /* Zabrání zbytečnému natahování kratší sekce */
+                        gap: 30px;
+                        margin: 30px auto;
+                    }
+                    .menu-section {
+                        flex: 2; /* Jídelní lístek dostane 2/3 prostoru */
+                    }
+                    .order-section {
+                        flex: 1; /* Košík dostane 1/3 prostoru */
+                    }
+                }
+
+                h2 { margin-top: 0; color: var(--dark); border-bottom: 2px solid var(--light); padding-bottom: 10px; font-size: 1.3rem; }
+                
+                /* Responzivní položka v menu */
                 .menu-item {
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
+                    flex-wrap: wrap; /* Pokud se text nevejde vedle tlačítek, odřadkuje se */
+                    gap: 10px;
                     padding: 15px 0;
                     border-bottom: 1px solid var(--light);
                 }
                 .menu-item:last-child { border-bottom: none; }
                 
-                /* Nové styly pro vstup množství a odebírací tlačítko */
+                .menu-item-controls {
+                    display: flex;
+                    align-items: center;
+                    justify-content: flex-end;
+                    flex-grow: 1; /* Roztáhne ovládání k pravému kraji */
+                }
+                
                 .volume-input {
-                    padding: 4px 8px;
+                    padding: 6px 8px;
                     border: 1px solid #d1d5db;
                     border-radius: 6px;
-                    width: 65px;
+                    width: 60px;
                     text-align: center;
-                    margin-left: 5px;
+                    margin: 0 5px;
+                    font-size: 0.9rem;
                 }
+                
                 .remove-btn {
                     background: none;
                     border: none;
                     color: var(--danger);
                     cursor: pointer;
                     font-size: 1.1rem;
-                    padding: 0 5px;
-                    transition: transform 0.1s;
+                    padding: 5px;
                 }
-                .remove-btn:hover { transform: scale(1.2); }
 
                 .add-btn {
                     background-color: var(--primary);
@@ -195,16 +230,19 @@ class RestaurantApp { //třída pro hlavní logiku aplikace
                     font-weight: bold;
                     cursor: pointer;
                     transition: all 0.2s;
+                    font-size: 0.9rem;
                 }
-                .add-btn:hover { transform: translateY(-2px); opacity: 0.9; }
+                .add-btn:hover { opacity: 0.9; }
+                
                 #order-list { list-style: none; padding: 0; margin: 0; }
                 #order-list li {
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
-                    padding: 10px 0;
+                    padding: 12px 0;
                     border-bottom: 1px dashed var(--light);
                     color: #4b5563;
+                    font-size: 0.95rem;
                 }
                 .total {
                     margin-top: 20px;
@@ -223,9 +261,7 @@ class RestaurantApp { //třída pro hlavní logiku aplikace
                     font-size: 1rem;
                     font-weight: bold;
                     cursor: pointer;
-                    transition: background 0.2s;
                 }
-                .checkout-btn:hover { background-color: #111827; }
                 .checkout-btn:disabled { background-color: #9ca3af; cursor: not-allowed; }
             </style>
 

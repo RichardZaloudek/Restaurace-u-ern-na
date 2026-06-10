@@ -290,7 +290,7 @@ class RestaurantApp { //třída pro hlavní logiku aplikace
         this.setupCheckoutListener();
     }
 
-    private renderMenu(): void { //metoda pro vykreslení menu do HTML, generuje položky a přidává posluchače pro změnu množství a přidání do košíku
+        private renderMenu(): void {
         const menuContainer = document.getElementById('menu-items');
         if (!menuContainer) return;
 
@@ -298,27 +298,23 @@ class RestaurantApp { //třída pro hlavní logiku aplikace
             const itemRow = document.createElement('div');
             itemRow.className = 'menu-item';
             
-            // Generování HTML pro změnu množství (pouze pro nápoje)
             let volumeControlsHtml = '';
             if (item instanceof Drink) {
                 volumeControlsHtml = `
-                    <label style="font-size: 0.9rem; color: #4b5563; margin-right: 15px;">
-                        Množství: 
+                    <label style="font-size: 0.9rem; color: #4b5563; margin-right: 10px;">
                         <input type="number" class="volume-input" value="${item.getVolumeMl()}" min="10" step="50"> ml
                     </label>
                 `;
             }
             
-            //Základní HTML pro položku menu, včetně dynamického zobrazení ceny a ovládacích prvků pro nápoje
             itemRow.innerHTML = `
                 <span>${item.getName()} (<strong><span class="price-display">${item.calculatePrice()}</span> Kč</strong>)</span>
-                <div style="display: flex; align-items: center;">
+                <div class="menu-item-controls">
                     ${volumeControlsHtml}
                     <button class="add-btn">Přidat</button>
                 </div>
-            `; 
+            `;
 
-            // Živé překreslování orientační ceny při změně mililitrů v lístku
             if (item instanceof Drink) {
                 const volumeInput = itemRow.querySelector('.volume-input') as HTMLInputElement;
                 const priceDisplay = itemRow.querySelector('.price-display') as HTMLSpanElement;
@@ -330,14 +326,12 @@ class RestaurantApp { //třída pro hlavní logiku aplikace
                 });
             }
 
-            // Obsluha kliknutí na "Přidat"
             itemRow.querySelector('.add-btn')?.addEventListener('click', () => {
                 let itemToAdd = item;
                 
                 if (item instanceof Drink) {
                     const volumeInput = itemRow.querySelector('.volume-input') as HTMLInputElement;
                     const customVolume = parseInt(volumeInput.value) || 0;
-                    // Vytvoří novou instanci nápoje se specifickým zadaným objemem
                     itemToAdd = new Drink(item.getName(), item.getBasePrice(), customVolume);
                 }
                 
@@ -348,8 +342,7 @@ class RestaurantApp { //třída pro hlavní logiku aplikace
             menuContainer.appendChild(itemRow);
         });
     }
-
-    private renderOrder(): void { //metoda pro vykreslení aktuální objednávky do HTML, zobrazuje položky v košíku, jejich jednotlivé ceny, celkovou cenu a přidává možnost odebrat položku z košíku
+    private renderOrder(): void {
         const orderList = document.getElementById('order-list');
         const totalPriceSpan = document.getElementById('total-price');
         const checkoutBtn = document.getElementById('checkout-btn') as HTMLButtonElement;
@@ -360,13 +353,12 @@ class RestaurantApp { //třída pro hlavní logiku aplikace
         const items = this.currentOrder.getItems();
 
         if (items.length === 0) {
-            orderList.innerHTML = '<li style="text-align:center; font-style:italic;">Košík je prázdný</li>';
+            orderList.innerHTML = '<li style="text-align:center; font-style:italic; justify-content:center;">Košík je prázdný</li>';
             if (checkoutBtn) checkoutBtn.disabled = true;
         } else {
             items.forEach((item, index) => {
                 const li = document.createElement('li');
                 
-                // Formátování textu položky v košíku (u nápojů se vypíše i přesné ml)
                 let itemDetails = '';
                 if (item instanceof Drink) {
                     itemDetails = ` (${item.getVolumeMl()} ml)`;
@@ -377,7 +369,6 @@ class RestaurantApp { //třída pro hlavní logiku aplikace
                     <button class="remove-btn" title="Odebrat z objednávky">❌</button>
                 `;
                 
-                // Přidání posluchače pro odebrání konkrétního prvku z košíku podle indexu
                 li.querySelector('.remove-btn')?.addEventListener('click', () => {
                     this.currentOrder.removeItem(index);
                     this.renderOrder();

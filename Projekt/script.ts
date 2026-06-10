@@ -110,7 +110,7 @@ class RestaurantApp { //třída pro hlavní logiku aplikace
         ];
     }
 
-    private init(): void {
+    private init(): void { //metoda pro inicializaci aplikace, nastaví základní strukturu HTML a zavolá metody pro vykreslení menu a objednávky
         const appElement = document.getElementById('app');
         if (!appElement) {
             console.error("Prvek #app nebyl v HTML nalezen!");
@@ -290,7 +290,7 @@ class RestaurantApp { //třída pro hlavní logiku aplikace
         this.setupCheckoutListener();
     }
 
-        private renderMenu(): void {
+    private renderMenu(): void { //metoda pro vykreslení menu, vytvoří HTML pro každou položku a přidá ji do DOM
         const menuContainer = document.getElementById('menu-items');
         if (!menuContainer) return;
 
@@ -298,7 +298,7 @@ class RestaurantApp { //třída pro hlavní logiku aplikace
             const itemRow = document.createElement('div');
             itemRow.className = 'menu-item';
             
-            let volumeControlsHtml = '';
+            let volumeControlsHtml = ''; // Pokud je položka nápoj, přidá ovládací prvky pro nastavení objemu
             if (item instanceof Drink) {
                 volumeControlsHtml = `
                     <label style="font-size: 0.9rem; color: #4b5563; margin-right: 10px;">
@@ -315,7 +315,7 @@ class RestaurantApp { //třída pro hlavní logiku aplikace
                 </div>
             `;
 
-            if (item instanceof Drink) {
+            if (item instanceof Drink) { // Přidání posluchače pro změnu objemu u nápojů
                 const volumeInput = itemRow.querySelector('.volume-input') as HTMLInputElement;
                 const priceDisplay = itemRow.querySelector('.price-display') as HTMLSpanElement;
                 
@@ -326,7 +326,7 @@ class RestaurantApp { //třída pro hlavní logiku aplikace
                 });
             }
 
-            itemRow.querySelector('.add-btn')?.addEventListener('click', () => {
+            itemRow.querySelector('.add-btn')?.addEventListener('click', () => { // Přidání položky do objednávky, pokud je to nápoj, vytvoří se nová instance s nastaveným objemem
                 let itemToAdd = item;
                 
                 if (item instanceof Drink) {
@@ -342,17 +342,17 @@ class RestaurantApp { //třída pro hlavní logiku aplikace
             menuContainer.appendChild(itemRow);
         });
     }
-    private renderOrder(): void {
+    private renderOrder(): void { //metoda pro vykreslení aktuální objednávky, vytvoří HTML pro každou položku v košíku a přidá ji do DOM, + aktualizuje celkovou cenu
         const orderList = document.getElementById('order-list');
         const totalPriceSpan = document.getElementById('total-price');
         const checkoutBtn = document.getElementById('checkout-btn') as HTMLButtonElement;
         
         if (!orderList || !totalPriceSpan) return;
 
-        orderList.innerHTML = '';
+        orderList.innerHTML = ''; // Vyčistí aktuální obsah objednávky před znovuvykreslením
         const items = this.currentOrder.getItems();
 
-        if (items.length === 0) {
+        if (items.length === 0) { // Pokud je košík prázdný, zobrazí se zpráva a zakáže se tlačítko pro odeslání objednávky
             orderList.innerHTML = '<li style="text-align:center; font-style:italic; justify-content:center;">Košík je prázdný</li>';
             if (checkoutBtn) checkoutBtn.disabled = true;
         } else {
@@ -382,7 +382,7 @@ class RestaurantApp { //třída pro hlavní logiku aplikace
         totalPriceSpan.textContent = this.currentOrder.calculateTotal().toString();
     }
 
-    private setupCheckoutListener(): void { //metoda pro nastavení posluchače události pro tlačítko "Odeslat objednávku", které zobrazí alert s celkovou cenou a vyčistí košík
+    private setupCheckoutListener(): void { //metoda pro nastavení posluchače na tlačítko pro odeslání objednávky, po kliknutí zobrazí alert s celkovou cenou a vyčistí objednávku
         const checkoutBtn = document.getElementById('checkout-btn');
         checkoutBtn?.addEventListener('click', () => {
             const total = this.currentOrder.calculateTotal();

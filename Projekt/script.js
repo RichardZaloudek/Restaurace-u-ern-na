@@ -9,6 +9,10 @@ class MenuItem {
     getName() {
         return this.name;
     }
+    // Nová metoda pro získání základní ceny (potřebná při klonování nápojů)
+    getBasePrice() {
+        return this.basePrice;
+    }
 }
 class Food extends MenuItem {
     portionSize; // v gramech
@@ -21,19 +25,29 @@ class Food extends MenuItem {
     }
 }
 class Drink extends MenuItem {
-    volume; // v litrech
-    constructor(name, basePrice, volume) {
+    volumeMl; // Změna: nyní ukládáme v mililitrech
+    constructor(name, basePrice, volumeMl) {
         super(name, basePrice);
-        this.volume = volume;
+        this.volumeMl = volumeMl;
     }
     calculatePrice() {
-        return Math.round(this.basePrice * this.volume);
+        // Výpočet ceny: basePrice reprezentuje cenu za 1 litr (1000 ml)
+        return Math.round(this.basePrice * (this.volumeMl / 1000));
+    }
+    getVolumeMl() {
+        return this.volumeMl;
     }
 }
 class Order {
     items = [];
     addItem(item) {
         this.items.push(item);
+    }
+    // Nová metoda: Odebrání prvku z košíku podle indexu
+    removeItem(index) {
+        if (index >= 0 && index < this.items.length) {
+            this.items.splice(index, 1);
+        }
     }
     getItems() {
         return this.items;
@@ -60,13 +74,14 @@ class RestaurantApp {
         }
     }
     loadMenuData() {
+        // Nápoje jsou nyní definovány v mililitrech (500 ml, 400 ml, 330 ml)
         this.menuList = [
             new Food("Svíčková na smetaně", 180, 150),
             new Food("Smažený sýr s hranolkami", 160, 200),
             new Food("Kuřecí řízek s kaší", 150, 150),
-            new Drink("Pivo 11°", 90, 0.5),
-            new Drink("Domácí limonáda", 120, 0.4),
-            new Drink("Coca-Cola", 150, 0.33)
+            new Drink("Pivo 11°", 90, 500),
+            new Drink("Domácí limonáda", 120, 400),
+            new Drink("Coca-Cola", 150, 330)
         ];
     }
     init() {
@@ -75,13 +90,13 @@ class RestaurantApp {
             console.error("Prvek #app nebyl v HTML nalezen!");
             return;
         }
-        // Vložíme moderní styly a HTML strukturu přímo přes TS
         appElement.innerHTML = `
             <style>
                 :root {
                     --primary: #eab308;
                     --dark: #1f2937;
                     --light: #f3f4f6;
+                    --danger: #ef4444;
                 }
                 body {
                     font-family: 'Segoe UI', Roboto, sans-serif;
@@ -123,6 +138,27 @@ class RestaurantApp {
                     border-bottom: 1px solid var(--light);
                 }
                 .menu-item:last-child { border-bottom: none; }
+                
+                /* Nové styly pro vstup množství a odebírací tlačítko */
+                .volume-input {
+                    padding: 4px 8px;
+                    border: 1px solid #d1d5db;
+                    border-radius: 6px;
+                    width: 65px;
+                    text-align: center;
+                    margin-left: 5px;
+                }
+                .remove-btn {
+                    background: none;
+                    border: none;
+                    color: var(--danger);
+                    cursor: pointer;
+                    font-size: 1.1rem;
+                    padding: 0 5px;
+                    transition: transform 0.1s;
+                }
+                .remove-btn:hover { transform: scale(1.2); }
+
                 .add-btn {
                     background-color: var(--primary);
                     color: var(--dark);
@@ -136,6 +172,9 @@ class RestaurantApp {
                 .add-btn:hover { transform: translateY(-2px); opacity: 0.9; }
                 #order-list { list-style: none; padding: 0; margin: 0; }
                 #order-list li {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
                     padding: 10px 0;
                     border-bottom: 1px dashed var(--light);
                     color: #4b5563;
@@ -193,12 +232,43 @@ class RestaurantApp {
         this.menuList.forEach((item) => {
             const itemRow = document.createElement('div');
             itemRow.className = 'menu-item';
+            // Generování HTML pro změnu množství (pouze pro nápoje)
+            let volumeControlsHtml = '';
+            if (item instanceof Drink) {
+                volumeControlsHtml = `
+                    <label style="font-size: 0.9rem; color: #4b5563; margin-right: 15px;">
+                        Množství: 
+                        <input type="number" class="volume-input" value="${item.getVolumeMl()}" min="10" step="50"> ml
+                    </label>
+                `;
+            }
             itemRow.innerHTML = `
-                <span>${item.getName()} (<strong>${item.calculatePrice()} Kč</strong>)</span>
-                <button class="add-btn">Přidat</button>
+                <span>${item.getName()} (<strong><span class="price-display">${item.calculatePrice()}</span> Kč</strong>)</span>
+                <div style="display: flex; align-items: center;">
+                    ${volumeControlsHtml}
+                    <button class="add-btn">Přidat</button>
+                </div>
             `;
+            // Živé překreslování orientační ceny při změně mililitrů v lístku
+            if (item instanceof Drink) {
+                const volumeInput = itemRow.querySelector('.volume-input');
+                const priceDisplay = itemRow.querySelector('.price-display');
+                volumeInput?.addEventListener('input', () => {
+                    const currentMl = parseInt(volumeInput.value) || 0;
+                    const tempDrink = new Drink(item.getName(), item.getBasePrice(), currentMl);
+                    priceDisplay.textContent = tempDrink.calculatePrice().toString();
+                });
+            }
+            // Obsluha kliknutí na "Přidat"
             itemRow.querySelector('.add-btn')?.addEventListener('click', () => {
-                this.currentOrder.addItem(item);
+                let itemToAdd = item;
+                if (item instanceof Drink) {
+                    const volumeInput = itemRow.querySelector('.volume-input');
+                    const customVolume = parseInt(volumeInput.value) || 0;
+                    // Vytvoříme novou instanci nápoje se specifickým zadaným objemem
+                    itemToAdd = new Drink(item.getName(), item.getBasePrice(), customVolume);
+                }
+                this.currentOrder.addItem(itemToAdd);
                 this.renderOrder();
             });
             menuContainer.appendChild(itemRow);
@@ -218,9 +288,22 @@ class RestaurantApp {
                 checkoutBtn.disabled = true;
         }
         else {
-            items.forEach((item) => {
+            items.forEach((item, index) => {
                 const li = document.createElement('li');
-                li.textContent = `${item.getName()} - ${item.calculatePrice()} Kč`;
+                // Formátování textu položky v košíku (u nápojů vypíšeme i přesné ml)
+                let itemDetails = '';
+                if (item instanceof Drink) {
+                    itemDetails = ` (${item.getVolumeMl()} ml)`;
+                }
+                li.innerHTML = `
+                    <span>${item.getName()}${itemDetails} - <strong>${item.calculatePrice()} Kč</strong></span>
+                    <button class="remove-btn" title="Odebrat z objednávky">❌</button>
+                `;
+                // Přidání posluchače pro odebrání konkrétního prvku z košíku podle indexu
+                li.querySelector('.remove-btn')?.addEventListener('click', () => {
+                    this.currentOrder.removeItem(index);
+                    this.renderOrder();
+                });
                 orderList.appendChild(li);
             });
             if (checkoutBtn)
@@ -228,14 +311,11 @@ class RestaurantApp {
         }
         totalPriceSpan.textContent = this.currentOrder.calculateTotal().toString();
     }
-    // Nová metoda pro zpracování kliknutí na objednávku
     setupCheckoutListener() {
         const checkoutBtn = document.getElementById('checkout-btn');
         checkoutBtn?.addEventListener('click', () => {
             const total = this.currentOrder.calculateTotal();
-            // Simulace odeslání objednávky
             alert(`🎉 Objednávka byla úspěšně odeslána do kuchyně!\nCelkem k placení: ${total} Kč.`);
-            // Vyčištění košíku
             this.currentOrder.clear();
             this.renderOrder();
         });

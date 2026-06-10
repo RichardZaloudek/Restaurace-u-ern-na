@@ -1,6 +1,6 @@
 // --- MODELY (Třídy pro data) ---
 class MenuItem {
-    name;
+    name; //protected pro možnost přístupu v potomcích
     basePrice;
     constructor(name, basePrice) {
         this.name = name;
@@ -9,7 +9,7 @@ class MenuItem {
     getName() {
         return this.name;
     }
-    // Nová metoda pro získání základní ceny (potřebná při klonování nápojů)
+    // metoda pro získání základní ceny
     getBasePrice() {
         return this.basePrice;
     }
@@ -25,7 +25,7 @@ class Food extends MenuItem {
     }
 }
 class Drink extends MenuItem {
-    volumeMl; // Změna: nyní ukládáme v mililitrech
+    volumeMl; // v mililitrech
     constructor(name, basePrice, volumeMl) {
         super(name, basePrice);
         this.volumeMl = volumeMl;
@@ -39,11 +39,11 @@ class Drink extends MenuItem {
     }
 }
 class Order {
-    items = [];
+    items = []; //private znamená, že pole je přístupné pouze uvnitř třídy
     addItem(item) {
         this.items.push(item);
     }
-    // Nová metoda: Odebrání prvku z košíku podle indexu
+    //Odebrání prvku z košíku podle indexu
     removeItem(index) {
         if (index >= 0 && index < this.items.length) {
             this.items.splice(index, 1);
@@ -56,7 +56,7 @@ class Order {
         this.items = [];
     }
     calculateTotal() {
-        return this.items.reduce((sum, item) => sum + item.calculatePrice(), 0);
+        return this.items.reduce((sum, item) => sum + item.calculatePrice(), 0); //výpočet celkové ceny objednávky
     }
 }
 // --- HLAVNÍ APLIKAČNÍ TŘÍDA ---
@@ -66,7 +66,7 @@ class RestaurantApp {
     constructor() {
         this.currentOrder = new Order();
         this.loadMenuData();
-        if (document.readyState === 'loading') {
+        if (document.readyState === 'loading') { // Pokud je dokument ještě načítán, počká na událost DOMContentLoaded, obstaralo Gemini pro správné načítání aplikace
             document.addEventListener('DOMContentLoaded', () => this.init());
         }
         else {
@@ -74,7 +74,7 @@ class RestaurantApp {
         }
     }
     loadMenuData() {
-        // Nápoje jsou nyní definovány v mililitrech (500 ml, 400 ml, 330 ml)
+        // Nápoje jsou definovány v mililitrech
         this.menuList = [
             new Food("Svíčková na smetaně", 180, 150),
             new Food("Smažený sýr s hranolkami", 160, 200),
@@ -242,6 +242,7 @@ class RestaurantApp {
                     </label>
                 `;
             }
+            //Základní HTML pro položku menu, včetně dynamického zobrazení ceny a ovládacích prvků pro nápoje
             itemRow.innerHTML = `
                 <span>${item.getName()} (<strong><span class="price-display">${item.calculatePrice()}</span> Kč</strong>)</span>
                 <div style="display: flex; align-items: center;">
@@ -265,7 +266,7 @@ class RestaurantApp {
                 if (item instanceof Drink) {
                     const volumeInput = itemRow.querySelector('.volume-input');
                     const customVolume = parseInt(volumeInput.value) || 0;
-                    // Vytvoříme novou instanci nápoje se specifickým zadaným objemem
+                    // Vytvoří novou instanci nápoje se specifickým zadaným objemem
                     itemToAdd = new Drink(item.getName(), item.getBasePrice(), customVolume);
                 }
                 this.currentOrder.addItem(itemToAdd);
@@ -290,7 +291,7 @@ class RestaurantApp {
         else {
             items.forEach((item, index) => {
                 const li = document.createElement('li');
-                // Formátování textu položky v košíku (u nápojů vypíšeme i přesné ml)
+                // Formátování textu položky v košíku (u nápojů se vypíše i přesné ml)
                 let itemDetails = '';
                 if (item instanceof Drink) {
                     itemDetails = ` (${item.getVolumeMl()} ml)`;

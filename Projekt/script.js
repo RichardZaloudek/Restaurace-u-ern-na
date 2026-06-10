@@ -111,53 +111,88 @@ class RestaurantApp {
                     padding: 20px 0;
                     box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
                 }
-                header h1 { margin: 0; font-weight: 600; }
+                header h1 { margin: 0; font-weight: 600; font-size: 1.5rem; }
+                
+                /* --- NOVÝ FLEXBOX KONTEJNER (Mobilní první - pod sebou) --- */
                 .restaurant-container {
-                    display: grid;
-                    grid-template-columns: 1fr;
-                    gap: 30px;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 20px;
                     max-width: 1200px;
-                    margin: 30px auto;
-                    padding: 0 20px;
+                    margin: 20px auto;
+                    padding: 0 15px;
+                    box-sizing: border-box;
                 }
-                @media (min-width: 768px) {
-                    .restaurant-container { grid-template-columns: 2fr 1fr; }
-                }
+                
                 section {
                     background: white;
-                    padding: 25px;
+                    padding: 20px;
                     border-radius: 12px;
                     box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+                    box-sizing: border-box;
                 }
-                h2 { margin-top: 0; color: var(--dark); border-bottom: 2px solid var(--light); padding-bottom: 10px; }
+                
+                /* Výchozí plná šířka pro flex položky na mobilu */
+                .menu-section, .order-section {
+                    flex: 1 1 100%;
+                }
+
+                /* --- RESPONZIVITA PRO TABLETY A DESKOPY (Vedle sebe) --- */
+                @media (min-width: 768px) {
+                    header h1 { font-size: 2rem; }
+                    .restaurant-container { 
+                        flex-direction: row; 
+                        align-items: flex-start; /* Zabrání zbytečnému natahování kratší sekce */
+                        gap: 30px;
+                        margin: 30px auto;
+                    }
+                    .menu-section {
+                        flex: 2; /* Jídelní lístek dostane 2/3 prostoru */
+                    }
+                    .order-section {
+                        flex: 1; /* Košík dostane 1/3 prostoru */
+                    }
+                }
+
+                h2 { margin-top: 0; color: var(--dark); border-bottom: 2px solid var(--light); padding-bottom: 10px; font-size: 1.3rem; }
+                
+                /* Responzivní položka v menu */
                 .menu-item {
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
+                    flex-wrap: wrap; /* Pokud se text nevejde vedle tlačítek, odřadkuje se */
+                    gap: 10px;
                     padding: 15px 0;
                     border-bottom: 1px solid var(--light);
                 }
                 .menu-item:last-child { border-bottom: none; }
                 
-                /* Nové styly pro vstup množství a odebírací tlačítko */
+                .menu-item-controls {
+                    display: flex;
+                    align-items: center;
+                    justify-content: flex-end;
+                    flex-grow: 1; /* Roztáhne ovládání k pravému kraji */
+                }
+                
                 .volume-input {
-                    padding: 4px 8px;
+                    padding: 6px 8px;
                     border: 1px solid #d1d5db;
                     border-radius: 6px;
-                    width: 65px;
+                    width: 60px;
                     text-align: center;
-                    margin-left: 5px;
+                    margin: 0 5px;
+                    font-size: 0.9rem;
                 }
+                
                 .remove-btn {
                     background: none;
                     border: none;
                     color: var(--danger);
                     cursor: pointer;
                     font-size: 1.1rem;
-                    padding: 0 5px;
-                    transition: transform 0.1s;
+                    padding: 5px;
                 }
-                .remove-btn:hover { transform: scale(1.2); }
 
                 .add-btn {
                     background-color: var(--primary);
@@ -168,16 +203,19 @@ class RestaurantApp {
                     font-weight: bold;
                     cursor: pointer;
                     transition: all 0.2s;
+                    font-size: 0.9rem;
                 }
-                .add-btn:hover { transform: translateY(-2px); opacity: 0.9; }
+                .add-btn:hover { opacity: 0.9; }
+                
                 #order-list { list-style: none; padding: 0; margin: 0; }
                 #order-list li {
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
-                    padding: 10px 0;
+                    padding: 12px 0;
                     border-bottom: 1px dashed var(--light);
                     color: #4b5563;
+                    font-size: 0.95rem;
                 }
                 .total {
                     margin-top: 20px;
@@ -196,9 +234,7 @@ class RestaurantApp {
                     font-size: 1rem;
                     font-weight: bold;
                     cursor: pointer;
-                    transition: background 0.2s;
                 }
-                .checkout-btn:hover { background-color: #111827; }
                 .checkout-btn:disabled { background-color: #9ca3af; cursor: not-allowed; }
             </style>
 
@@ -232,26 +268,22 @@ class RestaurantApp {
         this.menuList.forEach((item) => {
             const itemRow = document.createElement('div');
             itemRow.className = 'menu-item';
-            // Generování HTML pro změnu množství (pouze pro nápoje)
-            let volumeControlsHtml = '';
+            let volumeControlsHtml = ''; // Pokud je položka nápoj, přidá ovládací prvky pro nastavení objemu
             if (item instanceof Drink) {
                 volumeControlsHtml = `
-                    <label style="font-size: 0.9rem; color: #4b5563; margin-right: 15px;">
-                        Množství: 
+                    <label style="font-size: 0.9rem; color: #4b5563; margin-right: 10px;">
                         <input type="number" class="volume-input" value="${item.getVolumeMl()}" min="10" step="50"> ml
                     </label>
                 `;
             }
-            //Základní HTML pro položku menu, včetně dynamického zobrazení ceny a ovládacích prvků pro nápoje
             itemRow.innerHTML = `
                 <span>${item.getName()} (<strong><span class="price-display">${item.calculatePrice()}</span> Kč</strong>)</span>
-                <div style="display: flex; align-items: center;">
+                <div class="menu-item-controls">
                     ${volumeControlsHtml}
                     <button class="add-btn">Přidat</button>
                 </div>
             `;
-            // Živé překreslování orientační ceny při změně mililitrů v lístku
-            if (item instanceof Drink) {
+            if (item instanceof Drink) { // Přidání posluchače pro změnu objemu u nápojů
                 const volumeInput = itemRow.querySelector('.volume-input');
                 const priceDisplay = itemRow.querySelector('.price-display');
                 volumeInput?.addEventListener('input', () => {
@@ -260,13 +292,11 @@ class RestaurantApp {
                     priceDisplay.textContent = tempDrink.calculatePrice().toString();
                 });
             }
-            // Obsluha kliknutí na "Přidat"
             itemRow.querySelector('.add-btn')?.addEventListener('click', () => {
                 let itemToAdd = item;
                 if (item instanceof Drink) {
                     const volumeInput = itemRow.querySelector('.volume-input');
                     const customVolume = parseInt(volumeInput.value) || 0;
-                    // Vytvoří novou instanci nápoje se specifickým zadaným objemem
                     itemToAdd = new Drink(item.getName(), item.getBasePrice(), customVolume);
                 }
                 this.currentOrder.addItem(itemToAdd);
@@ -281,17 +311,16 @@ class RestaurantApp {
         const checkoutBtn = document.getElementById('checkout-btn');
         if (!orderList || !totalPriceSpan)
             return;
-        orderList.innerHTML = '';
+        orderList.innerHTML = ''; // Vyčistí aktuální obsah objednávky před znovuvykreslením
         const items = this.currentOrder.getItems();
-        if (items.length === 0) {
-            orderList.innerHTML = '<li style="text-align:center; font-style:italic;">Košík je prázdný</li>';
+        if (items.length === 0) { // Pokud je košík prázdný, zobrazí se zpráva a zakáže se tlačítko pro odeslání objednávky
+            orderList.innerHTML = '<li style="text-align:center; font-style:italic; justify-content:center;">Košík je prázdný</li>';
             if (checkoutBtn)
                 checkoutBtn.disabled = true;
         }
         else {
             items.forEach((item, index) => {
                 const li = document.createElement('li');
-                // Formátování textu položky v košíku (u nápojů se vypíše i přesné ml)
                 let itemDetails = '';
                 if (item instanceof Drink) {
                     itemDetails = ` (${item.getVolumeMl()} ml)`;
@@ -300,7 +329,6 @@ class RestaurantApp {
                     <span>${item.getName()}${itemDetails} - <strong>${item.calculatePrice()} Kč</strong></span>
                     <button class="remove-btn" title="Odebrat z objednávky">❌</button>
                 `;
-                // Přidání posluchače pro odebrání konkrétního prvku z košíku podle indexu
                 li.querySelector('.remove-btn')?.addEventListener('click', () => {
                     this.currentOrder.removeItem(index);
                     this.renderOrder();
